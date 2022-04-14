@@ -1,0 +1,58 @@
+#!/usr/bin/env python3
+
+"""
+Python script to automatically grab all the variables that are floats
+in the h0 files.
+
+This script grabs all h0 files and chooses the last one in the datasaet to extract variable names via ncdump and grep
+    * the actual file it is grabbing doesn't matter as long as all the h0 files in the dataset have the same variables
+
+Args
+----
+ first - case name 
+    * ie f.c6_3_41.FWscHIST.ne30_L58_exner.002
+ second - path where case lives (*** leave out the atm/hist ***)
+    * /glade/scratch/hannay/archive/
+ third (optional) - path to save the output text file
+    * if not supplied, the script will place it in the current working dir
+
+Returns
+-------
+  Text file with space formatted variable names to copy and paste directly into your config yaml file
+"""
+
+import sys
+import os
+from glob import glob
+
+case = sys.argv[1]
+path = sys.argv[2]
+if len(sys.argv) == 4:
+    save_path = sys.argv[3]
+if len(sys.argv) == 3:
+    save_path = "./"
+if len(sys.argv) < 3:
+    print("Error - not enough arguments supplied"+
+    "\nDid you provide the case name first and case dataset location second?")
+
+case_path = f"{path}{case}/atm/hist/"
+
+h0_file = sorted(glob(f"{case_path}*h0*"))[-1]
+h0_file
+
+fname = f"{case}_raw_var_list.txt"
+os.system(f"ncdump -h {h0_file} | grep float > {fname}")
+
+start="float "
+end="("
+
+with open(fname,'r') as file:
+    lines = file.readlines()
+
+with open(f'{save_path}{fname.replace("_raw","")}','w') as f:
+    for s in lines:
+        match = s[s.find(start)+len(start):s.rfind(end)]
+        match_format = f"   - {match}"
+        print(f"{match_format}")
+        f.write(f"{match_format}\n")
+os.remove(fname)
