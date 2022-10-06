@@ -26,22 +26,27 @@ import sys
 import os
 from glob import glob
 
-if len(sys.argv) < 4:
+if len(sys.argv) < 5:
     print("Error - not enough arguments supplied"+
-    "\n USAGE: ncdump_var_hN case_name inputfile_path filetype [optional: output text file]"+
+    "\n USAGE: ncdump_var_hN case_name inputfile_path filetype component [optional: output text file]"+
     "\n        case_name: the CESM case name "+
     "\n        inputfile_path: the path leading up to the case name (not include $case/atm/hist) "+
-    "\n        required: filetype = h0, h1, etc."+
+    "\n        filetype  = h0, h1, or any text that can be globbed( h., h.nday1 for ocn)"+
+    "\n        component = atm,lnd,ocn,... s.t. $case/$component/$hist "+
     "\n        optional: output text file in which to write the results."+
     "\n                  (Otherwise results are printed to the screen *and* a local file named $case.txt)")
 
 case = sys.argv[1]
 path = sys.argv[2]
 hN   = sys.argv[3]
+component = sys.argv[4]
+
+if len(sys.argv) == 6:
+    save_path = sys.argv[5]
 if len(sys.argv) == 5:
-    save_path = sys.argv[4]
-if len(sys.argv) == 4:
     save_path = "./"
+
+#print(f" Settings: \n case:\t\t{case}\n path:\t\t{path} \n file type:\t{hN} \n component:\t{component}")
 
 # Check if the hN argument was given with or without the h. If the latter, add it
 # Note: we should check if the result/input matches h0,h1,etc but that is left as an exercise for the (next) user
@@ -51,7 +56,8 @@ if (hN[0]!='h'):
    print(f"New hN {hN}")
 
 
-case_path = f"{path}{case}/atm/hist/"
+case_path = f"{path}{case}/{component}/hist/"
+print(f" Looking for {case_path}*{hN}*")
 
 hN_list = sorted(glob(f"{case_path}*{hN}*"))
 if (len(hN_list)==0):
@@ -61,10 +67,12 @@ else:
    print(f"Found {len(hN_list)} files")
 
 
-hN_file = hN_list[-1]
-hN_file
+hN_file = hN_list[0]  #get first file (to solve ocn problem: h.YYYY precedes h.nday1.YYYY, h.ecosys.nday1.YYYY etc
 
-fname = f"{case}_{hN}_raw_var_list.txt"
+print(f"reading first file {hN_file}")
+
+
+fname = f"{case}_{component}_{hN}_raw_var_list.txt"
 os.system(f"ncdump -h {hN_file} | grep float > {fname}")
 
 start="float "
