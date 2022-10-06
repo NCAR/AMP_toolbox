@@ -28,10 +28,11 @@ from glob import glob
 
 if len(sys.argv) < 5:
     print("Error - not enough arguments supplied"+
-    "\n USAGE: ncdump_var_hN case_name inputfile_path filetype [optional: output text file]"+
+    "\n USAGE: ncdump_var_hN case_name inputfile_path filetype component [optional: output text file]"+
     "\n        case_name: the CESM case name "+
     "\n        inputfile_path: the path leading up to the case name (not include $case/atm/hist) "+
-    "\n        filetype = h0, h1, or h., h.nday1 for ocn"+
+    "\n        filetype  = h0, h1, or any text that can be globbed( h., h.nday1 for ocn)"+
+    "\n        component = atm,lnd,ocn,... s.t. $case/$component/$hist "+
     "\n        optional: output text file in which to write the results."+
     "\n                  (Otherwise results are printed to the screen *and* a local file named $case.txt)")
 
