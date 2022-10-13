@@ -1,0 +1,91 @@
+#!/usr/bin/env python
+
+# remap_dir
+# Provides a command line interface to remap
+# lat-lon files from one grid to another. 
+# Works on all netCDF files within specified directory.
+#
+# Remember to make executable with something like `chmod a+x remap_dir`.
+
+import argparse
+import subprocess
+from pathlib import Path
+
+
+def main(iloc, oloc, mapfil, dstgrid):
+    # INPUT files (all nc files in directory)
+    fils = sorted(iloc.glob("*.nc"))
+    print(f"Found {len(fils)} files to remap.")
+
+    # OUTPUT LOCATION validation
+    if not isinstance(oloc, Path):
+        oloc = Path(oloc)
+    if not oloc.is_dir():
+        print(f"Output directory does not exist, will mkdir: {str(oloc)}")
+        oloc.mkdir(parents=True, exist_ok=True)
+    mapfil = Path(mapfil) if not isinstance(mapfil, Path) else mapfil
+    dstgrid = Path(dstgrid) if not isinstance(dstgrid, Path) else dstgrid
+    # DESTINATION GRID needed if map file is not made
+    if mapfil.is_file():
+        print("Map file exists, so will use that (no dst needed).")
+    else:
+        print("Map file will be created using dst file.")
+        assert dstgrid.is_file()
+    # LOOP through files and apply remapping
+    for f in fils:
+        ofil = get_output_path(f, oloc)
+        _apply(f, mapfil, ofil, dst_grd=dstgrid)
+
+
+def _apply(ifil, mapfil, ofil, dst_grd=None, dry_run=None):
+    """
+    Apply `ncremap` using tempestremap algorithm
+    -- assumes regular grid to regular grid
+    """
+    if mapfil.is_file():
+        cmd_pieces = [
+            "ncremap",
+            "-a",
+            "fv2fv",
+            "-m",
+            str(mapfil),
+            "-i",
+            str(ifil),
+            "-o",
+            ofil,
+        ]
+    else:
+        assert dst_grd is not None
+        assert Path(dst_grd).is_file()
+        cmd_pieces = [
+            "ncremap",
+            "-a",
+            "fv2fv",
+            "-m",
+            str(mapfil),
+            "-d",
+            str(dst_grd),
+            "-i",
+            str(ifil),
+            "-o",
+            str(ofil),
+        ]
+    if not dry_run:
+        subprocess.run(cmd_pieces)
+
+
+def get_output_path(ifil, oloc):
+    return oloc / ifil.name
+
+
+if __name__ == "__main__":
+    # argument: indir -> get all nc files in this directory
+    # argument: map -> the offlinemap file already prepared
+    # argument: outdir -> directory where remapped files should go
+    my_parser = argparse.ArgumentParser(description='Remap all netCDF (.nc) files in input directory using either mapping file or destination grid, output in output directory. Assumes lat-lon grids throughout.')
+    my_parser.add_argument("--input", type=str, help="Input directory to search for `.nc` files.")
+    my_parser.add_argument("--map", type=str, help="Mapping file. Used if it exists, created if it does not.")
+    my_parser.add_argument("--dst", type=str, help="Destination grid; used to generate mapping file if needed.")
+    my_parser.add_argument("--output", type=str, help="Output directory to place final files. **Should NOT be the same as input directory!** Will be created if needed.")
+    args = my_parser.parse_args()
+    main(Path(args.input), Path(args.output), args.map, args.dst)
