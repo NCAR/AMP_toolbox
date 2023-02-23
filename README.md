@@ -12,5 +12,6 @@ This is a list of additional repos that contain potentially relevant tools and d
 * Brian Medeiros's "Hacknostics" repo:
   - https://github.com/brianpm/hacknostics
   
-* Cecile: Jupyter Book template:
-  -  https://cecilehannay.github.io/jupyter-book-template/README.html
+* Jupyter Book template:
+  - https://github.com/cecilehannay/jupyter-book-template
+ 
