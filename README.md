@@ -15,3 +15,6 @@ This is a list of additional repos that contain potentially relevant tools and d
 * Jupyter Book template:
   - https://github.com/cecilehannay/jupyter-book-template
  
+## ADF Tutorial/Demo
+Jupyter Book detailing the ADF (AMWG Diagnostics Framework) including ADF basics, guided examples, quick runs, and references
+  - https://justin-richling.github.io/ADF-Tutorial/README.html
