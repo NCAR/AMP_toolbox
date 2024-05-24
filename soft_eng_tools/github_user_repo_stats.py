@@ -6,7 +6,12 @@ import sys
 from getpass import getpass
 from zoneinfo import ZoneInfo
 
-#Non-standard python modules:
+#This script uses the Non-standard
+#"PyGithub" package, which is
+#described here:
+#https://pygithub.readthedocs.io/en/stable/introduction.html
+
+#Import needed PyGithub modules:
 from github import Github
 from github import Auth
 from github import BadCredentialsException
@@ -85,6 +90,14 @@ def main_script():
     functionality for this program.
     """
 
+    #Script requires python version 3.9 or greater,
+    #so throw an error if not the case:
+    if sys.version_info[0] < 3 or (sys.version_info[0] == 3 and sys.version_info[1] < 9):
+        emsg = "This script requires python 3.9 or later, currently using python version"
+        emsg += f" {sys.version_info[0]}.{sys.version_info[1]}"
+        raise SystemError(emsg)
+    #End if
+
     #Parse command line arguments:
     args = parse_command_line(sys.argv[1:], __doc__)
 
@@ -114,11 +127,12 @@ def main_script():
         raise ValueError("Bad Github authorization token!")
     #End try/except
 
-    #Set Github username:
+    #Set Github username,
+    #if username not provided,
+    #then assume same name as login:
     if  args.username:
-        #If username not provided, then
-        #assume same name as login:
         username = args.username
+    #End if
 
     #Extract requested organization:
     org = ghub.get_organization(repo_args[0])
@@ -134,14 +148,23 @@ def main_script():
     #Set timezone (currently assumed to be Denver):
     denver_time = ZoneInfo("America/Denver")
 
-    #Set counters:
+    #Set review counters:
     num_reviewed_prs = 0  #Number of PRs reviewed
     num_additions    = 0  #Number of lines where code was added
     num_deletions    = 0  #Number of lines where code was deleted
 
-    #Set max values:
+    #Set review max values:
     max_pr_additions = 0  #Maximum number of additions for a single PR
-    max_pr_num       = 0  #PR number which contained maximum number of adds.
+    max_pr_num       = 0  #PR number which contained maximum number of adds
+
+    #Set creation counters:
+    num_created_prs = 0   #Number of PRs created
+    num_create_adds = 0   #Number of lines where code was added
+    num_create_dels = 0   #Number of lines where code was deleted
+
+    #Set creation max values:
+    max_created_pr_adds = 0 #Maximum number of additions for a single created PR
+    max_created_pr_num  = 0 #created PR number which contained maximum of adds
 
     #Notify user that PR loop has started:
     print("Looping over PRs for ESCOMP/CAM...")
@@ -170,9 +193,30 @@ def main_script():
 
         print(f"On PR number {pr.number}")
 
-        #check if reviews exist for PR,
-        #if not then move on to next PR:
-        if not pr.get_reviews():
+        #check if user created the PR,
+        #if so then collect PR creation stats:
+        created_pr = False
+        if pr.user.login == username:
+            created_pr = True
+            #Add one to PRs created counter:
+            num_created_prs += 1
+            #Add number of lines with text additions
+            #to counter:
+            num_create_adds += pr.additions
+            #Add number of lines with text deletions
+            #to counter:
+            num_create_dels += pr.deletions
+            #Check if PR additions greater than max:
+            if pr.additions > max_created_pr_adds:
+                max_created_pr_adds = pr.additions
+                max_created_pr_num = pr.number
+            #End if
+        #End if
+
+        #check if PR was created by the user,
+        #or if no reviews exist for PR, and
+        #if so then move on to the next PR:
+        if created_pr or (not pr.get_reviews()):
             continue
         #end if
 
@@ -218,6 +262,23 @@ def main_script():
     ghub.close()
 
     #Print out results:
+    print("\n")
+    print("-----------------")
+    print("PR creation stats")
+    print("-----------------")
+    print("\n")
+    print(f"Total number of PRs opened = {num_created_prs:,}")
+    print("\n")
+    print(f"Total number of lines with text added = {num_create_adds:,}")
+    print("\n")
+    print(f"Total number of lines with text removed = {num_create_dels:,}")
+    print("\n")
+    print(f"Maximum number of additions for single opened PR = {max_created_pr_adds:,}")
+    print(f"Maximum additions PR number = {max_created_pr_num:,}")
+    print("\n")
+    print("-----------------")
+    print("PR review stats")
+    print("-----------------")
     print("\n")
     print(f"Total number of PRs reviewed = {num_reviewed_prs:,}")
     print("\n")
