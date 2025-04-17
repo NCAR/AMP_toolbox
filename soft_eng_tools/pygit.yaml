@@ -1,0 +1,44 @@
+name: pygit
+channels:
+  - conda-forge
+  - r
+dependencies:
+  - _libgcc_mutex=0.1
+  - _openmp_mutex=4.5
+  - bzip2=1.0.8
+  - ca-certificates=2025.1.31
+  - ld_impl_linux-64=2.43
+  - libexpat=2.7.0
+  - libffi=3.4.6
+  - libgcc=14.2.0
+  - libgcc-ng=14.2.0
+  - libgomp=14.2.0
+  - liblzma=5.8.1
+  - libmpdec=4.0.0
+  - libsqlite=3.49.1
+  - libuuid=2.38.1
+  - libzlib=1.3.1
+  - ncurses=6.5
+  - openssl=3.5.0
+  - pip=25.0.1
+  - python=3.13.3
+  - python_abi=3.13
+  - readline=8.2
+  - tk=8.6.13
+  - tzdata=2025b
+  - pip:
+      - certifi==2025.1.31
+      - cffi==1.17.1
+      - charset-normalizer==3.4.1
+      - cryptography==44.0.2
+      - deprecated==1.2.18
+      - idna==3.10
+      - pycparser==2.22
+      - pygithub==2.6.1
+      - pyjwt==2.10.1
+      - pynacl==1.5.0
+      - requests==2.32.3
+      - typing-extensions==4.13.2
+      - urllib3==2.4.0
+      - wrapt==1.17.2
+prefix: /glade/work/$USER/conda-envs/pygit
