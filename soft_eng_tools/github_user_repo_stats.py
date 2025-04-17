@@ -167,7 +167,7 @@ def main_script():
     max_created_pr_num  = 0 #created PR number which contained maximum of adds
 
     #Notify user that PR loop has started:
-    print("Looping over PRs for ESCOMP/CAM...")
+    print(f"Looping over PRs for {repo_args[0]}/{repo_args[1]}...")
 
     #Set loop break variable:
     stop_loop = False
@@ -256,7 +256,7 @@ def main_script():
     #end for (Pull requests)
 
     #Notify user that PR loop has finished:
-    print("...Finished ESCOMP/CAM PR loop.")
+    print(f"...Finished {repo_args[0]}/{repo_args[1]} PR loop.")
 
     #Close Github connection:
     ghub.close()
